@@ -35,7 +35,7 @@ class MyFrame1 ( wx.Frame ):
         self.m_panel1 = wx.Panel( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
         bSizer2 = wx.BoxSizer( wx.HORIZONTAL )
         
-        m_radioBox1Choices = [ u"테이블1", u"테이블2", u"테이블3", u"테이블4",u"테이블5",u"테이블6"]
+        m_radioBox1Choices = [ u"테이블1", u"테이블2", u"테이블3", u"테이블4",u"테이블5",u"테이블6", u"전체"]
         self.m_radioBox1 = wx.RadioBox( self.m_panel1, wx.ID_ANY, u"테이블 선택", wx.DefaultPosition, wx.DefaultSize, m_radioBox1Choices, 1, wx.RA_SPECIFY_ROWS )
         self.m_radioBox1.SetSelection( 0 )
         bSizer2.Add( self.m_radioBox1, 1, wx.ALL|wx.EXPAND, 5 )
@@ -149,13 +149,16 @@ class MyFrame1 ( wx.Frame ):
         bSizer1.Add( self.m_panel3, 1, wx.EXPAND |wx.ALL, 5 )
         
         self.m_panel8 = wx.Panel( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
-        bSizer9 = wx.BoxSizer( wx.VERTICAL )
+        bSizer9 = wx.BoxSizer( wx.HORIZONTAL )
+        
+        self.m_button12 = wx.Button( self.m_panel8, wx.ID_ANY, u"주문조회", wx.DefaultPosition, wx.DefaultSize, 0 )
+        bSizer9.Add( self.m_button12, 0, wx.ALIGN_LEFT|wx.ALL, 5 )
         
         self.m_button11 = wx.Button( self.m_panel8, wx.ID_ANY, u"주문접수", wx.DefaultPosition, wx.DefaultSize, 0 )
-        bSizer9.Add( self.m_button11, 0, wx.ALIGN_RIGHT|wx.ALL, 5 )
+        bSizer9.Add( self.m_button11, 0, wx.ALIGN_LEFT|wx.ALL, 5 )
         
         self.btn2 = wx.Button( self.m_panel8, wx.ID_ANY, u"삭제", wx.DefaultPosition, wx.DefaultSize, 0 )
-        bSizer9.Add( self.btn2, 0, wx.ALIGN_RIGHT|wx.ALL, 5 )
+        bSizer9.Add( self.btn2, 0, wx.ALIGN_LEFT|wx.ALL, 5 )
         
         self.m_panel8.SetSizer( bSizer9 )
         self.m_panel8.Layout()
@@ -199,6 +202,7 @@ class MyFrame1 ( wx.Frame ):
         self.m_button8.Bind( wx.EVT_BUTTON, self.pizza2_clk )
         self.m_button9.Bind( wx.EVT_BUTTON, self.pizza3_clk )
         self.m_button11.Bind( wx.EVT_BUTTON, self.input_data )
+        self.m_button12.Bind(wx.EVT_BUTTON,self.order_check)
         self.btn2.Bind( wx.EVT_BUTTON, self.onClickDel )
     def __del__( self ):
         pass
@@ -279,6 +283,43 @@ class MyFrame1 ( wx.Frame ):
     def pizza3_clk( self, event ):
         event.Skip()
     
+    def order_check(self,event):
+        tno = self.m_radioBox1.GetSelection()+1
+        try:
+            conn = mysql.connector.connect(**config)
+            cursor = conn.cursor()
+            sql = "SELECT * FROM order_table where table_no='%s' ORDER BY order_no ASC"%tno
+            cursor.execute(sql)
+            datas = cursor.fetchall()
+            
+            self.lstView.DeleteAllItems()
+            if  len(datas) > 0:  
+                for row in datas:  
+                       
+                    i = self.lstView.InsertItem(100, 0)              
+                    print(i)
+                    self.lstView.SetItem(i, 0, str(row[0]))
+                    self.lstView.SetItem(i, 1, str(row[1]))                
+                    self.lstView.SetItem(i, 2, row[2])
+                    self.lstView.SetItem(i, 3, str(row[3]))
+                    self.lstView.SetItem(i, 4, str(row[4]))
+                    self.lstView.SetItem(i, 5, str(row[5]))
+                    self.lstView.SetItem(i, 6, row[6])
+                    self.lstView.SetItem(i, 7, str(row[7]))
+                    #self.m_listCtrl1.SetItem(i, 7, str(int(row[2]) * int(row[3]))) # 칼럼 없음
+            
+        except mysql.connector.Error as err:
+            if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
+                print('id or password 오류')
+            elif err.errno == errorcode.ER_BAD_DB_ERROR:
+                print('db 오류')
+            else:
+                print('기타 에러 : ', err)
+            conn.rollback()
+        finally:
+            cursor.close()
+            conn.close()   
+                
     def input_data( self, event ):
         tno=self.m_radioBox1.GetSelection()+1
         sus =[] # 수량 빈 리스트
@@ -326,7 +367,7 @@ class MyFrame1 ( wx.Frame ):
                 
             #수량 초기화 
             #self.m_choice1.SetSelection()='0'
-            sql = "SELECT * FROM order_table ORDER BY order_no ASC"
+            sql = "SELECT * FROM order_table where pay_yn='n' and table_no='%s' ORDER BY order_no ASC"%tno
             cursor.execute(sql)
             datas = cursor.fetchall()
             
@@ -360,6 +401,7 @@ class MyFrame1 ( wx.Frame ):
             
     def onClickDel( self, event ):       
         # 선택된 항목 수  
+        tno = self.m_radioBox1.GetSelection()+1
         select = self.lstView.GetSelectedItemCount()
         
         if select > 0 : # item을 한 개 이상 선택한 경우 
@@ -376,7 +418,7 @@ class MyFrame1 ( wx.Frame ):
                 conn.commit()
 
                 # 레코드 검색 
-                sql = "select * from order_table"            
+                sql = "select * from order_table where table_no="+str(tno)            
                 cursor.execute(sql)
             
                 # ListView 표시 

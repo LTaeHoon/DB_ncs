@@ -283,12 +283,19 @@ class MyFrame1 ( wx.Frame ):
     def pizza3_clk( self, event ):
         event.Skip()
     
+    #주문조회버튼
     def order_check(self,event):
         tno = self.m_radioBox1.GetSelection()+1
+        tnostr = self.m_radioBox1.GetStringSelection()
+        print(tnostr)
+        
         try:
             conn = mysql.connector.connect(**config)
             cursor = conn.cursor()
-            sql = "SELECT * FROM order_table where table_no='%s' ORDER BY order_no ASC"%tno
+            if tnostr !='전체':
+                sql = "SELECT * FROM order_table where table_no='%s' ORDER BY order_no ASC"%tno
+            else :
+                sql ="select * from order_table order by order_no ASC"
             cursor.execute(sql)
             datas = cursor.fetchall()
             
@@ -320,6 +327,7 @@ class MyFrame1 ( wx.Frame ):
             cursor.close()
             conn.close()   
                 
+    #주문접수
     def input_data( self, event ):
         tno=self.m_radioBox1.GetSelection()+1
         sus =[] # 수량 빈 리스트
@@ -348,25 +356,36 @@ class MyFrame1 ( wx.Frame ):
         if int(self.m_choice6.GetStringSelection())>0 :
             sus.append(int(self.m_choice6.GetStringSelection()))
             menus.append(self.m_button9.GetLabel())
-            dans.append(25000)                                               
+            dans.append(25000)       
+            
+        print(sus)
         try:
             conn = mysql.connector.connect(**config)
             cursor = conn.cursor()
-            
-            for i in range(len(sus)):      
-                print(i)
-                price = sus[i]*dans[i]
-                menu = menus[i]
-                su = sus[i]
-                dan = dans[i]
-                sdata=(tno,menu,su,dan,price,"n")
-                print(sdata)
-                sql = "insert into order_table(table_no, menu, su, dan, price, pay_yn) values(%s,%s,%s,%s,%s,%s)"
-                cursor.execute(sql, sdata)
-                conn.commit()
-                
+            if self.m_radioBox1.GetStringSelection() !='전체' and len(sus)==0:
+                wx.MessageBox('수량을 입력하세요.')
+            if self.m_radioBox1.GetStringSelection() =='전체':
+                wx.MessageBox('테이블 전체 선택시에는 주문접수가 안됩니다.')
+            else :
+                for i in range(len(sus)):      
+                    print(i)
+                    price = sus[i]*dans[i]
+                    menu = menus[i]
+                    su = sus[i]
+                    dan = dans[i]
+                    sdata=(tno,menu,su,dan,price,"n")
+                    print(sdata)
+                    sql = "insert into order_table(table_no, menu, su, dan, price, pay_yn) values(%s,%s,%s,%s,%s,%s)"
+                    cursor.execute(sql, sdata)
+                    conn.commit()
+                    
             #수량 초기화 
-            #self.m_choice1.SetSelection()='0'
+            self.m_choice1.SetSelection(0)
+            self.m_choice2.SetSelection(0)
+            self.m_choice3.SetSelection(0)
+            self.m_choice4.SetSelection(0)
+            self.m_choice5.SetSelection(0)
+            self.m_choice6.SetSelection(0)
             sql = "SELECT * FROM order_table where pay_yn='n' and table_no='%s' ORDER BY order_no ASC"%tno
             cursor.execute(sql)
             datas = cursor.fetchall()
@@ -387,6 +406,8 @@ class MyFrame1 ( wx.Frame ):
                     self.lstView.SetItem(i, 7, str(row[7]))
                     #self.m_listCtrl1.SetItem(i, 7, str(int(row[2]) * int(row[3]))) # 칼럼 없음
             
+            
+        
         except mysql.connector.Error as err:
             if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
                 print('id or password 오류')

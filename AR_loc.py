@@ -125,15 +125,18 @@ class MyFrame1 ( wx.Frame ):
     def OnChoice_loc( self, event ):
         #evnet.skip()
         choice = self.m_choice1.GetSelection()
-        #print(choice)
-        
+        #지도 출력
         if choice == 0 :
-            img = wx.StaticBitmap( self.m_panel5, wx.ID_ANY, wx.Bitmap(u"loc01.png", wx.BITMAP_TYPE_ANY), wx.DefaultPosition, wx.DefaultSize, 0 )
-            self.m_bitmap2.SetBitmap(img)
+            self.m_bitmap2.SetBitmap(wx.Bitmap('loc01.png'))
         elif choice == 1 :
-            img = wx.StaticBitmap( self.m_panel5, wx.ID_ANY, wx.Bitmap(u"loc02.png", wx.BITMAP_TYPE_ANY), wx.DefaultPosition, wx.Size(900.300), 0 )
-            self.m_bitmap2.SetBitmap(img)
-    
+            self.m_bitmap2.SetBitmap(wx.Bitmap('loc02.png'))
+        elif choice == 2 :
+            self.m_bitmap2.SetBitmap(wx.Bitmap('loc03.png'))
+        elif choice == 3 :
+            self.m_bitmap2.SetBitmap(wx.Bitmap('loc04.png'))
+        elif choice == 4 :
+            self.m_bitmap2.SetBitmap(wx.Bitmap('loc05.png'))
+        
 if __name__ == '__main__':
     app = wx.App()
     frame = MyFrame1(None).Show()

@@ -24,7 +24,12 @@ config = {
 ###########################################################################
 
 class MyFrame1 ( wx.Frame ):
-    
+    cnt1 = 0
+    cnt2 = 0
+    cnt3 = 0
+    cnt4 = 0
+    cnt5 = 0
+    cnt6 = 0
     def __init__( self, parent ):
         wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = u"주문 접수", pos = wx.DefaultPosition, size = wx.Size( 750,600 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
         
@@ -265,23 +270,61 @@ class MyFrame1 ( wx.Frame ):
         finally:
             cursor.close()
             conn.close()
-    def pasta1_clk( self, event ):
-        event.Skip()
+    def pasta1_clk( self, event):
+        
+        self.cnt1 +=1
+        if self.cnt1%2!=0 :
+            self.m_button1.SetBackgroundColour("Yellow")
+            self.m_button1.Refresh()
+        else:
+            self.m_button1.SetBackgroundColour(wx.NullColour)
+            self.m_button1.Refresh()   
+        #event.Skip()
     
     def pasta2_clk( self, event ):
-        event.Skip()
+        self.cnt2 +=1
+        if self.cnt2%2!=0 :
+            self.m_button3.SetBackgroundColour("Yellow")
+            self.m_button3.Refresh()
+        else:
+            self.m_button3.SetBackgroundColour(wx.NullColour)
+            self.m_button3.Refresh()  
     
     def pasta3_clk( self, event ):
-        event.Skip()
+        self.cnt3 +=1
+        if self.cnt3%2!=0 :
+            self.m_button4.SetBackgroundColour("Yellow")
+            self.m_button4.Refresh()
+        else:
+            self.m_button4.SetBackgroundColour(wx.NullColour)
+            self.m_button4.Refresh()  
     
     def pizza1_clk( self, event ):
-        event.Skip()
+        self.cnt4 +=1
+        if self.cnt4%2!=0 :
+            self.m_button7.SetBackgroundColour("Yellow")
+            self.m_button7.Refresh()
+        else:
+            self.m_button7.SetBackgroundColour(wx.NullColour)
+            self.m_button7.Refresh()  
     
     def pizza2_clk( self, event ):
-        event.Skip()
+        self.cnt5 +=1
+        if self.cnt5%2!=0 :
+            self.m_button8.SetBackgroundColour("Yellow")
+            self.m_button8.Refresh()
+        else:
+            self.m_button8.SetBackgroundColour(wx.NullColour)
+            self.m_button8.Refresh()  
     
     def pizza3_clk( self, event ):
-        event.Skip()
+        self.cnt6 +=1
+        if self.cnt6%2!=0 :
+            self.m_button9.SetBackgroundColour("Yellow")
+            self.m_button9.Refresh()
+        else:
+            self.m_button9.SetBackgroundColour(wx.NullColour)
+            self.m_button9.Refresh()  
     
     #주문조회버튼
     def order_check(self,event):
@@ -362,6 +405,12 @@ class MyFrame1 ( wx.Frame ):
         try:
             conn = mysql.connector.connect(**config)
             cursor = conn.cursor()
+            sql = "select * from order_table where table_no="+str(tno)
+            cursor.execute(sql)
+            datas=cursor.fetchall()
+            if len(datas)>0 and len(sus)!=0:
+                wx.MessageBox('추가 주문 되었습니다.')
+            
             if self.m_radioBox1.GetStringSelection() !='전체' and len(sus)==0:
                 wx.MessageBox('수량을 입력하세요.')
             if self.m_radioBox1.GetStringSelection() =='전체':
@@ -386,6 +435,7 @@ class MyFrame1 ( wx.Frame ):
             self.m_choice4.SetSelection(0)
             self.m_choice5.SetSelection(0)
             self.m_choice6.SetSelection(0)
+            
             sql = "SELECT * FROM order_table where pay_yn='n' and table_no='%s' ORDER BY order_no ASC"%tno
             cursor.execute(sql)
             datas = cursor.fetchall()
